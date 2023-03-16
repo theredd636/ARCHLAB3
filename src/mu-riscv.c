@@ -1,9 +1,3 @@
-mu-mips: mu-mips.c
-	gcc -Wall -g -O2 $^ -o $@
-
-.PHONY: clean
-clean:
-	rm -rf *.o *~ mu-mips
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,7 +5,7 @@ clean:
 #include <assert.h>
 
 #include "mu-riscv.h"
-
+int RISCV_REGS=32;
 /***************************************************************/
 /* Print out a list of commands available                                                                  */
 /***************************************************************/
@@ -314,16 +308,18 @@ void load_program() {
 /************************************************************/
 /* maintain the pipeline                                                                                           */
 /************************************************************/
+int ll;
 void handle_pipeline()
 {
 	/*INSTRUCTION_COUNT should be incremented when instruction is done*/
 	/*Since we do not have branch/jump instructions, INSTRUCTION_COUNT should be incremented in WB stage */
-
 	WB();
 	MEM();
 	EX();
 	ID();
 	IF();
+	ll=ll+1;
+	printf("instruction %d\n",ll);
 }
 
 /************************************************************/
@@ -364,6 +360,7 @@ void ID()
 void IF()
 {
 	/*IMPLEMENT THIS*/
+
 }
 
 
