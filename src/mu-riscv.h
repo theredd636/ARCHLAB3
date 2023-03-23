@@ -36,12 +36,12 @@ mem_region_t MEM_REGIONS[] = {
 };
 
 #define NUM_MEM_REGION 4
-#define MIPS_REGS 32
+#define RISCV_REGS 32
 
 typedef struct CPU_State_Struct {
 
   uint32_t PC;		                   /* program counter */
-  uint32_t REGS[MIPS_REGS]; /* register file. */
+  uint32_t REGS[RISCV_REGS]; /* register file. */
   uint32_t HI, LO;                          /* special regs for mult/div. */
 } CPU_State;
 
@@ -70,10 +70,7 @@ uint32_t PROGRAM_SIZE; /*in words*/
 /***************************************************************/
 /* Pipeline Registers.                                                                                                        */
 /***************************************************************/
-CPU_Pipeline_Reg ID_IF;
-CPU_Pipeline_Reg IF_EX;
-CPU_Pipeline_Reg EX_MEM;
-CPU_Pipeline_Reg MEM_WB;
+
 
 char prog_file[32];
 
