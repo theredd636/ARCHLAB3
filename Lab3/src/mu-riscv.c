@@ -6,7 +6,9 @@
 
 #include "mu-riscv.h"
 
-int RISCV_REGS=32;
+
+struct CPU_State_Struct C;
+
 /***************************************************************/
 /* Print out a list of commands available                                                                  */
 /***************************************************************/
@@ -309,11 +311,24 @@ void load_program() {
 /************************************************************/
 /* maintain the pipeline                                                                                           */
 /************************************************************/
+
+int binaryToInt(int* input,int size){
+    int count=1;
+    int total=0;
+    for (int i=0;i<size;i++){
+        total+=input[i]*count;
+        if(i>0){
+             count*=2;
+        }
+    }
+    return total;
+}
+
 void handle_pipeline()
 {
 	/*INSTRUCTION_COUNT should be incremented when instruction is done*/
 	/*Since we do not have branch/jump instructions, INSTRUCTION_COUNT should be incremented in WB stage */
-
+	
 	WB();
 	MEM();
 	EX();
@@ -326,44 +341,37 @@ void handle_pipeline()
 /************************************************************/
 void WB()
 {
-	
 	/*IMPLEMENT THIS*/
+	
 }
 
 /************************************************************/
 /* memory access (MEM) pipeline stage:                                                          */
 /************************************************************/
-void MEM(char* instruction, int* address,int* ALUOutput,int* LMD, int* B,int* LMD)
+void MEM(char* instruction, uint32_t* address,uint32_t* ALUOutput,uint32_t* LMD, uint32_t* B)
 {
-	if(strcmp(instruction,"lw")){
-		LMD=mem(ALUOutput);
-	}
-	if(strcmp(instruction,"sw")){
-		mem(ALUOutput)=*B;
-	}
 	/*IMPLEMENT THIS*/
+	MEM_WB.IR=EX_MEM.IR;
+	MEM_WB.LMD=mem_read_32(EX_MEM.ALUOutput);
+	mem_write_32(EX_MEM.ALUOutput,EX_MEM.B);
+
+
+	
 }
 
 /************************************************************/
 /* execution (EX) pipeline stage:                                                                          */
 /************************************************************/
-void EX(int *A,int* B,int* imm,char* instruction,int* ALUOutput)
+void EX()
 {	
-	if(strcmp(instruction,"lw")==0 || strcmp(instruction,"sw")){
-		*ALUOutput=A+imm;
-	}
-	if(strcmp(instruction,"add")==0){
-		ALUOutput=A+B;
-	}
-	if(strcmp(instruction,"sub")==0){
-		ALUOutput=A-B;
-	}
-	if(strcmp(instruction,"addi")==0){
-		ALUOutput=A+imm;
-	}
-	if(strcmp(instruction,"subi")==0){
-		ALUOutput=A-imm;
-	}
+	
+	EX_MEM.IR=ID_EX.IR;
+	if(EX_MEM.IR==5){}
+	EX_MEM.ALUOutput=ID_EX.A+ID_EX.B;
+	EX_MEM.ALUOutput=ID_EX.A-ID_EX.B;
+
+	EX_MEM.ALUOutput=ID_EX.A+IF_ID.imm;
+	
 	/*IMPLEMENT THIS*/
 }
 
@@ -373,6 +381,10 @@ void EX(int *A,int* B,int* imm,char* instruction,int* ALUOutput)
 void ID()
 {
 	/*IMPLEMENT THIS*/
+	ID_EX.IR=IF_ID.IR;
+	//ID_EX.A=C.REGS[IF_ID.IR[rs]];
+	//ID_EX.B=C.REGS[IF_ID.IR[rt]];
+	ID_EX.ALUOutput=IF_ID.PC+IF_ID.imm;
 }
 
 /************************************************************/
@@ -381,6 +393,10 @@ void ID()
 void IF()
 {
 	/*IMPLEMENT THIS*/
+	uint32_t addr=CURRENT_STATE.PC;
+	IF_ID.PC=addr;
+	IF_ID.IR=mem_read_32(addr);
+	NEXT_STATE.PC+=4;
 }
 
 
