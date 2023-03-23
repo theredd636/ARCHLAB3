@@ -327,7 +327,8 @@ void handle_pipeline()
 /************************************************************/
 void WB()
 {
-	/*IMPLEMENT THIS*/
+	/*IMPLEMENT THIS
+	for load instruction: REGS[rt] <= LMD*/
 }
 
 /************************************************************/
@@ -335,7 +336,9 @@ void WB()
 /************************************************************/
 void MEM()
 {
-	/*IMPLEMENT THIS*/
+	/*IMPLEMENT THIS
+	for load: LMD <= MEM[ALUOut]
+for store: MEM[ALUOut] <= B*/
 }
 
 /************************************************************/
@@ -343,7 +346,15 @@ void MEM()
 /************************************************************/
 void EX()
 {
-	/*IMPLEMENT THIS*/
+	/*IMPLEMENT THIS
+	In this stage, we have an ALU that operates on the operands that were read in the previous stage. We
+can perform one of four functions depending on the instruction type.
+i) Memory Reference (immediate):
+The ALU is adding the operands to form the memory address.
+ii) Register-register Operation
+ALUOut <= A op B
+ALU performs the operation specified by the instruction on the values stored in temporary registers A and B and
+places the result into ALUOut*/
 }
 
 /************************************************************/
@@ -351,7 +362,10 @@ void EX()
 /************************************************************/
 void ID()
 {
-	/*IMPLEMENT THIS*/
+	/*IMPLEMENT THIS
+	A <= REGS[rs]
+B <= REGS[rt]
+ALUOut <= PC + immediate*/
 }
 
 /************************************************************/
@@ -359,7 +373,9 @@ void ID()
 /************************************************************/
 void IF()
 {
-	/*IMPLEMENT THIS*/
+	/*IMPLEMENT THIS
+	IR <= Mem[PC]
+PC <= PC + 4*/
 
 }
 
