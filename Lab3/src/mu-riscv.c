@@ -9,6 +9,8 @@
 
 struct CPU_State_Struct C;
 int binary[32];
+int opcode=0;
+int funct7=0;
 
 /***************************************************************/
 /* Print out a list of commands available                                                                  */
@@ -371,13 +373,12 @@ void WB()
 /************************************************************/
 /* memory access (MEM) pipeline stage:                                                          */
 /************************************************************/
-void MEM(int* opcode)
+void MEM()
 {
 	/*IMPLEMENT THIS*/
 	printf("Test2\n");
 	MEM_WB.IR=EX_MEM.IR;
-	int opcode1=binaryToInt(opcode,7);
-	if(opcode1==3){
+	if(opcode==3){
 		MEM_WB.LMD=mem_read_32(EX_MEM.ALUOutput);
 	}
 	//load function
@@ -394,14 +395,12 @@ void MEM(int* opcode)
 /************************************************************/
 /* execution (EX) pipeline stage:                                                                          */
 /************************************************************/
-void EX(int* opcode, int* funct7)
+void EX()
 {	
 	printf("Test3\n");
-	int opcode1=binaryToInt(opcode,7);
-	int functe7=binaryToInt(funct7,7);
 	EX_MEM.IR=ID_EX.IR;
-	if(opcode1==51){
-		if(functe7==0){
+	if(opcode==51){
+		if(funct7==0){
 			//add function
 			EX_MEM.ALUOutput=ID_EX.A+ID_EX.B;
 		}
@@ -456,7 +455,7 @@ void ID()
 	funct3[1] = binary[13];
 	funct3[2] = binary[12];
 	char *instName;
-	int opcode=binaryToInt(op,7);
+	opcode=binaryToInt(op,7);
 	int f3=binaryToInt(funct3,3);
 	if(opcode==50){
 			//instName=handleI(f3,instName);
@@ -470,7 +469,7 @@ void ID()
 		func7[4] = binary[28];
 		func7[5] = binary[29]; // = 1 for sub
 		func7[6] = binary[30];
-		int f7=binaryToInt(func7,7);
+		funct7=binaryToInt(func7,7);
 	if(opcode==12){
 		RUN_FLAG=FALSE;
 		instName="end";
@@ -492,8 +491,8 @@ void ID()
 	puts("");
 	int i;
 	i=BinaryIMMtoDec(FinalBinary);
-	ID_EX.A=IF_ID.IR;
-	ID_EX.B=IF_ID.IR;
+	ID_EX.A=C.REGS[IF_ID.IR];
+	ID_EX.B=C.REGS[IF_ID.IR];
 	ID_EX.ALUOutput=i+CURRENT_STATE.PC;
 
 }
