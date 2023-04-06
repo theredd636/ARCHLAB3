@@ -8,6 +8,7 @@
 
 
 struct CPU_State_Struct C;
+int binary[32];
 
 /***************************************************************/
 /* Print out a list of commands available                                                                  */
@@ -324,11 +325,31 @@ int binaryToInt(int* input,int size){
     return total;
 }
 
+
+int BinaryIMMtoDec(int *binary){
+    int Dec[17];
+    for(int i = 0; i < 5; i++){
+    Dec[i] = binary[7+i];
+    }
+    
+    
+    for(int i = 0; i < 12; i++)
+    {
+        Dec[5+i] = binary[20 + i];
+    }
+    
+    int size = 17;
+    int ret = binaryToInt(Dec,size);
+	printf("%d\n",ret);    
+    return ret;
+    
+}
+
 void handle_pipeline()
 {
 	/*INSTRUCTION_COUNT should be incremented when instruction is done*/
 	/*Since we do not have branch/jump instructions, INSTRUCTION_COUNT should be incremented in WB stage */
-	
+	printf("Test0\n");
 	WB();
 	MEM();
 	EX();
@@ -342,6 +363,7 @@ void handle_pipeline()
 void WB()
 {
 	/*IMPLEMENT THIS*/
+	printf("Test1\n");
 	MEM_WB.LMD=mem_read_32(MEM_WB.LMD);
 	
 }
@@ -352,9 +374,10 @@ void WB()
 void MEM(int* opcode)
 {
 	/*IMPLEMENT THIS*/
+	printf("Test2\n");
 	MEM_WB.IR=EX_MEM.IR;
-	int opcode1=binaryToInt(opcode);
-	if(opcode==3){
+	int opcode1=binaryToInt(opcode,7);
+	if(opcode1==3){
 		MEM_WB.LMD=mem_read_32(EX_MEM.ALUOutput);
 	}
 	//load function
@@ -373,8 +396,9 @@ void MEM(int* opcode)
 /************************************************************/
 void EX(int* opcode, int* funct7)
 {	
-	int opcode1=binaryToInt(opcode);
-	int functe7=binaryToInt(funct7);
+	printf("Test3\n");
+	int opcode1=binaryToInt(opcode,7);
+	int functe7=binaryToInt(funct7,7);
 	EX_MEM.IR=ID_EX.IR;
 	if(opcode1==51){
 		if(functe7==0){
@@ -402,9 +426,11 @@ void ID()
 {
 	/*IMPLEMENT THIS
 	A <= REGS[rs]
-B <= REGS[rt]
-ALUOut <= PC + immediate*/
+	B <= REGS[rt]
+	ALUOut <= PC + immediate*/
+	uint32_t instruction=IF_ID.IR;
 	int Sam=instruction;
+
 	printf("%c",instruction);
 	for(int craig=0; craig<32;craig++){
 		binary[craig]=0;
@@ -432,6 +458,9 @@ ALUOut <= PC + immediate*/
 	char *instName;
 	int opcode=binaryToInt(op,7);
 	int f3=binaryToInt(funct3,3);
+	if(opcode==50){
+			//instName=handleI(f3,instName);
+	}
 	if (opcode== 51){
 		int func7[7];
 		func7[0] = binary[24];
@@ -461,7 +490,12 @@ ALUOut <= PC + immediate*/
 		printf("%d", FinalBinary[berg]);
 	}
 	puts("");
-	BinaryIMMtoDec(FinalBinary);
+	int i;
+	i=BinaryIMMtoDec(FinalBinary);
+	ID_EX.A=IF_ID.IR;
+	ID_EX.B=IF_ID.IR;
+	ID_EX.ALUOutput=i+CURRENT_STATE.PC;
+
 }
 }
 
@@ -471,6 +505,7 @@ ALUOut <= PC + immediate*/
 void IF()
 {
 	/*IMPLEMENT THIS*/
+	printf("Test5\n");
 	uint32_t addr=CURRENT_STATE.PC;
 	IF_ID.PC=addr;
 	IF_ID.IR=mem_read_32(addr);
