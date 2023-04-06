@@ -15,6 +15,8 @@ CPU_Pipeline_Reg EX_MEM;
 CPU_Pipeline_Reg MEM_WB;
 int binary[32];
 uint32_t instruction;
+int ALUOut;
+
 /***************************************************************/
 /* Print out a list of commands available                                                                  */
 /***************************************************************/
@@ -356,6 +358,7 @@ void handle_pipeline()
 	EX();
 	ID();
 	IF();
+	INSTRUCTION_COUNT++;
 }
 
 /************************************************************/
@@ -377,6 +380,7 @@ void MEM()
 	/*IMPLEMENT THIS
 	for load: LMD <= MEM[ALUOut]
 for store: MEM[ALUOut] <= B*/
+
 }
 
 /************************************************************/
@@ -393,6 +397,7 @@ ii) Register-register Operation
 ALUOut <= A op B
 ALU performs the operation specified by the instruction on the values stored in temporary registers A and B and
 places the result into ALUOut*/
+
 }
 
 /************************************************************/
@@ -402,8 +407,8 @@ void ID()
 {
 	/*IMPLEMENT THIS
 	A <= REGS[rs]
-B <= REGS[rt]
-ALUOut <= PC + immediate*/
+	B <= REGS[rt]
+	ALUOut <= PC + immediate*/
 	int Sam=instruction;
 	printf("%c",instruction);
 	for(int craig=0; craig<32;craig++){
@@ -464,7 +469,13 @@ ALUOut <= PC + immediate*/
 		printf("%d", FinalBinary[berg]);
 	}
 	puts("");
-	BinaryIMMtoDec(FinalBinary);
+	int i;
+	i=BinaryIMMtoDec(FinalBinary);
+	printf("%d\n");
+	IF_EX.A=C.REGS[rs];
+	IF_EX.B=C.REGS[rt];
+	IF_EX.ALUOutput=i+CURRENT_STATE.PC;
+
 }
 }
 
