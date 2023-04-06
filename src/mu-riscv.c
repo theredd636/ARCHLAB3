@@ -10,13 +10,15 @@ int rt;//register to be written to
 uint32_t rs;
 uint32_t PC;//program counter;
 CPU_Pipeline_Reg ID_IF;
-CPU_Pipeline_Reg IF_EX;
+CPU_Pipeline_Reg ID_EX;
 CPU_Pipeline_Reg EX_MEM;
 CPU_Pipeline_Reg MEM_WB;
 int binary[32];
 uint32_t instruction;
 int ALUOut;
-
+int funct3[3];
+int op[7];
+int func7[7];
 /***************************************************************/
 /* Print out a list of commands available                                                                  */
 /***************************************************************/
@@ -380,7 +382,18 @@ void MEM()
 	/*IMPLEMENT THIS
 	for load: LMD <= MEM[ALUOut]
 for store: MEM[ALUOut] <= B*/
-
+	MEM_WB.IR=EX_MEM.IR;
+	int opcode1=binaryToInt(op,7);
+	if(opcode1==3){
+		MEM_WB.LMD=mem_read_32(EX_MEM.ALUOutput);
+	}
+	//load function
+	
+	
+	//save function
+	else{
+		mem_write_32(EX_MEM.ALUOutput,EX_MEM.B);
+	}
 }
 
 /************************************************************/
@@ -397,6 +410,25 @@ ii) Register-register Operation
 ALUOut <= A op B
 ALU performs the operation specified by the instruction on the values stored in temporary registers A and B and
 places the result into ALUOut*/
+	int opcode1=binaryToInt(op,7);
+	int functe7=binaryToInt(func7,7);
+	EX_MEM.IR=ID_EX.IR;
+	if(opcode1==51){
+		if(functe7==0){
+			//add function
+			EX_MEM.ALUOutput=ID_EX.A+ID_EX.B;
+		}
+		else{
+			//sub function
+			EX_MEM.ALUOutput=ID_EX.A-ID_EX.B;
+		}
+	}
+
+	
+	else{
+		EX_MEM.ALUOutput=ID_EX.A+ID_EX.imm;
+	}
+
 
 }
 
@@ -422,7 +454,6 @@ void ID()
 		binary[i++]=instruction%2;
 		instruction/=2;
 	}
-	int op[7];
 	i=32;
 	int y=0;
 	for(int w= i-26; w>=0; w--)
@@ -430,7 +461,6 @@ void ID()
 		op[y] = binary[w];
 		y++;
 	}
-	int funct3[3];
 	funct3[0] = binary[14];
 	funct3[1] = binary[13];
 	funct3[2] = binary[12];
@@ -441,7 +471,6 @@ void ID()
 			//instName=handleI(f3,instName);
 	}
 	if (opcode== 51){
-		int func7[7];
 		func7[0] = binary[24];
 		func7[1] = binary[25];
 		func7[2] = binary[26];
@@ -472,9 +501,9 @@ void ID()
 	int i;
 	i=BinaryIMMtoDec(FinalBinary);
 	printf("%d\n");
-	IF_EX.A=C.REGS[rs];
-	IF_EX.B=C.REGS[rt];
-	IF_EX.ALUOutput=i+CURRENT_STATE.PC;
+	ID_EX.A=C.REGS[rs];
+	ID_EX.B=C.REGS[rt];
+	ID_EX.ALUOutput=i+CURRENT_STATE.PC;
 
 }
 }
