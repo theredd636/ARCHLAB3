@@ -342,19 +342,28 @@ void handle_pipeline()
 void WB()
 {
 	/*IMPLEMENT THIS*/
+	MEM_WB.LMD=mem_read_32(MEM_WB.LMD);
 	
 }
 
 /************************************************************/
 /* memory access (MEM) pipeline stage:                                                          */
 /************************************************************/
-void MEM(char* instruction, uint32_t* address,uint32_t* ALUOutput,uint32_t* LMD, uint32_t* B)
+void MEM(int* opcode)
 {
 	/*IMPLEMENT THIS*/
 	MEM_WB.IR=EX_MEM.IR;
-	MEM_WB.LMD=mem_read_32(EX_MEM.ALUOutput);
-	mem_write_32(EX_MEM.ALUOutput,EX_MEM.B);
-
+	int opcode1=binaryToInt(opcode);
+	if(opcode==3){
+		MEM_WB.LMD=mem_read_32(EX_MEM.ALUOutput);
+	}
+	//load function
+	
+	
+	//save function
+	else{
+		mem_write_32(EX_MEM.ALUOutput,EX_MEM.B);
+	}
 
 	
 }
@@ -362,16 +371,27 @@ void MEM(char* instruction, uint32_t* address,uint32_t* ALUOutput,uint32_t* LMD,
 /************************************************************/
 /* execution (EX) pipeline stage:                                                                          */
 /************************************************************/
-void EX()
+void EX(int* opcode, int* funct7)
 {	
-	
+	int opcode1=binaryToInt(opcode);
+	int functe7=binaryToInt(funct7);
 	EX_MEM.IR=ID_EX.IR;
-	if(EX_MEM.IR==5){}
-	EX_MEM.ALUOutput=ID_EX.A+ID_EX.B;
-	EX_MEM.ALUOutput=ID_EX.A-ID_EX.B;
+	if(opcode1==51){
+		if(functe7==0){
+			//add function
+			EX_MEM.ALUOutput=ID_EX.A+ID_EX.B;
+		}
+		else{
+			//sub function
+			EX_MEM.ALUOutput=ID_EX.A-ID_EX.B;
+		}
+	}
 
-	EX_MEM.ALUOutput=ID_EX.A+IF_ID.imm;
 	
+	else{
+		EX_MEM.ALUOutput=ID_EX.A+IF_ID.imm;
+	}
+
 	/*IMPLEMENT THIS*/
 }
 
@@ -380,11 +400,69 @@ void EX()
 /************************************************************/
 void ID()
 {
-	/*IMPLEMENT THIS*/
-	ID_EX.IR=IF_ID.IR;
-	//ID_EX.A=C.REGS[IF_ID.IR[rs]];
-	//ID_EX.B=C.REGS[IF_ID.IR[rt]];
-	ID_EX.ALUOutput=IF_ID.PC+IF_ID.imm;
+	/*IMPLEMENT THIS
+	A <= REGS[rs]
+B <= REGS[rt]
+ALUOut <= PC + immediate*/
+	int Sam=instruction;
+	printf("%c",instruction);
+	for(int craig=0; craig<32;craig++){
+		binary[craig]=0;
+	}
+	int i=0;
+	while(instruction>0){
+		if(instruction%2==0){
+			binary[i]=0;
+		}
+		binary[i++]=instruction%2;
+		instruction/=2;
+	}
+	int op[7];
+	i=32;
+	int y=0;
+	for(int w= i-26; w>=0; w--)
+	{
+		op[y] = binary[w];
+		y++;
+	}
+	int funct3[3];
+	funct3[0] = binary[14];
+	funct3[1] = binary[13];
+	funct3[2] = binary[12];
+	char *instName;
+	int opcode=binaryToInt(op,7);
+	int f3=binaryToInt(funct3,3);
+	if (opcode== 51){
+		int func7[7];
+		func7[0] = binary[24];
+		func7[1] = binary[25];
+		func7[2] = binary[26];
+		func7[3] = binary[27];
+		func7[4] = binary[28];
+		func7[5] = binary[29]; // = 1 for sub
+		func7[6] = binary[30];
+		int f7=binaryToInt(func7,7);
+	if(opcode==12){
+		RUN_FLAG=FALSE;
+		instName="end";
+	}
+	puts("");
+	if(Sam==0){
+		RUN_FLAG=FALSE;
+	}
+	puts("");
+	int FinalBinary[32];
+	for(int berg15 = 0; berg15 < 32; berg15++)
+	{
+		FinalBinary[berg15] = binary[31 - berg15];
+	}
+
+	for(int berg=0;berg<32;berg++){
+		printf("%d", FinalBinary[berg]);
+	}
+	puts("");
+	BinaryIMMtoDec(FinalBinary);
+}
 }
 
 /************************************************************/
