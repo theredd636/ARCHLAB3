@@ -12,7 +12,7 @@ int binary[32];
 int opcode=0;
 int funct7=0;
 int forwardingFlag=0;
-
+int flag=0;
 
 /***************************************************************/
 /* Print out a list of commands available                                                                  */
@@ -318,35 +318,29 @@ void load_program() {
 /************************************************************/
 
 int binaryToInt(int* input,int size){
-    int count=1;
-    int total=0;
-    for (int i=0;i<size;i++){
-        total+=input[i]*count;
-        if(i>0){
-             count*=2;
+    int slider = 1;
+    int total = 0;
+    for(int i = 0; i <= size; i++)
+    {
+        if(input[size-i] == 1)
+        {
+            total = total + slider;
         }
+        slider = slider * 2;
     }
-    return total;
+    return total/2;
 }
 
-
 int BinaryIMMtoDec(int *binary){
-    int Dec[17];
-    for(int i = 0; i < 5; i++){
-    Dec[i] = binary[7+i];
-    }
-    
-    
+    int Dec[12];
     for(int i = 0; i < 12; i++)
     {
-        Dec[5+i] = binary[20 + i];
+        Dec[i] = binary[i];
     }
-    
-    int size = 17;
-    int ret = binaryToInt(Dec,size);
-	printf("%d\n",ret);    
-    return ret;
-    
+    int size = 12;
+    int ret=binaryToInt(Dec,size);
+	puts("");
+    return ret;       
 }
 
 void handle_pipeline()
@@ -405,16 +399,19 @@ void EX()
 		if(funct7==0){
 			//add function
 			EX_MEM.ALUOutput=ID_EX.A+ID_EX.B;
+			printf("add %d\n",ID_EX.A+ID_EX.B);
 		}
 		else{
 			//sub function
 			EX_MEM.ALUOutput=ID_EX.A-ID_EX.B;
+			printf("sub %d\n",ID_EX.A-ID_EX.B);
 		}
 	}
 
 	
 	else{
 		EX_MEM.ALUOutput=ID_EX.A+IF_ID.imm;
+		printf("addi/sw/lw %d\n",ID_EX.A+IF_ID.imm);
 	}
 
 	/*IMPLEMENT THIS*/
@@ -431,18 +428,29 @@ void ID()
 	ALUOut <= PC + immediate*/
 	uint32_t instruction=IF_ID.IR;
 	int Sam=instruction;
-
-	printf("%c",instruction);
+	instruction= 48576147;
+	if(Sam==0){
+		if(flag==1){
+			RUN_FLAG=FALSE;
+		}
+		flag++;
+	}
 	for(int craig=0; craig<32;craig++){
 		binary[craig]=0;
 	}
 	int i=0;
+	printf("%d\n ",instruction);
 	while(instruction>0){
 		if(instruction%2==0){
 			binary[i]=0;
 		}
 		binary[i++]=instruction%2;
 		instruction/=2;
+	}
+	int FinalBinary[32];
+	for(int berg15 = 0; berg15 < 32; berg15++)
+	{
+		FinalBinary[berg15] = binary[31 - berg15];
 	}
 	int op[7];
 	i=32;
@@ -459,46 +467,19 @@ void ID()
 	char *instName;
 	opcode=binaryToInt(op,7);
 	int f3=binaryToInt(funct3,3);
-	if(opcode==50){
-			//instName=handleI(f3,instName);
-	}
-	if (opcode== 51){
-		int func7[7];
-		func7[0] = binary[24];
-		func7[1] = binary[25];
-		func7[2] = binary[26];
-		func7[3] = binary[27];
-		func7[4] = binary[28];
-		func7[5] = binary[29]; // = 1 for sub
-		func7[6] = binary[30];
-		funct7=binaryToInt(func7,7);
-	if(opcode==12){
-		RUN_FLAG=FALSE;
-		instName="end";
-	}
-	puts("");
-	if(Sam==0){
-		RUN_FLAG=FALSE;
-	}
-	puts("");
-	int FinalBinary[32];
-	for(int berg15 = 0; berg15 < 32; berg15++)
-	{
-		FinalBinary[berg15] = binary[31 - berg15];
-	}
-
+	printf("%d\n",opcode);
 	for(int berg=0;berg<32;berg++){
 		printf("%d", FinalBinary[berg]);
 	}
 	puts("");
-	int i;
-	i=BinaryIMMtoDec(FinalBinary);
-	ID_EX.A=C.REGS[IF_ID.IR];
-	ID_EX.B=C.REGS[IF_ID.IR];
-	ID_EX.ALUOutput=i+CURRENT_STATE.PC;
+	int d;
+	d=BinaryIMMtoDec(FinalBinary);
+	printf("%d\n",d);
+	ID_EX.A=C.REGS[1];
+	ID_EX.B=C.REGS[2];
+	//ID_EX.ALUOutput=d+CURRENT_STATE.PC;
+}
 
-}
-}
 
 /************************************************************/
 /* instruction fetch (IF) pipeline stage:                                                              */
@@ -507,7 +488,7 @@ void IF()
 {
 	/*IMPLEMENT THIS*/
 	printf("Test5\n");
-	uint32_t addr=CURRENT_STATE.PC;
+	uint32_t addr=NEXT_STATE.PC;
 	IF_ID.PC=addr;
 	IF_ID.IR=mem_read_32(addr);
 	NEXT_STATE.PC+=4;
@@ -555,8 +536,14 @@ int main(int argc, char *argv[]) {
 	initialize();
 	load_program();
 	help();
+	
 	while (1){
 		handle_command();
 	}
+	/*
+	for(int i=0;i<5;i++){
+		handle_command();
+	}
+	*/
 	return 0;
 }
