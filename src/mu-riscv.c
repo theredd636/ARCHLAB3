@@ -320,17 +320,18 @@ void load_program() {
 /************************************************************/
 
 int binaryToInt(int* input,int size){
-    int count=1;
-    int total=0;
-    for (int i=0;i<size;i++){
-        total+=input[i]*count;
-        if(i>0){
-             count*=2;
+    int slider = 1;
+    int total = 0;
+    for(int i = 0; i <= size; i++)
+    {
+        if(input[size-i] == 1)
+        {
+            total = total + slider;
         }
+        slider = slider * 2;
     }
-    return total;
+    return total/2;
 }
-
 
 int BinaryIMMtoDec(int *binary){
     int Dec[12];
@@ -339,16 +340,9 @@ int BinaryIMMtoDec(int *binary){
         Dec[i] = binary[i];
     }
     int size = 12;
-    int count=1;
-    int total=0;
-    for (int i=12;i>=0;i--){
-		if(Dec[i]==1){
-        	total+=Dec[i]*count;
-		}
-		count*=2;
-    }
+    int ret=binaryToInt(Dec,size);
 	puts("");
-    return total/2;       
+    return ret;       
 }
 
 void handle_pipeline()
@@ -428,6 +422,7 @@ void ID()
 	ALUOut <= PC + immediate*/
 	uint32_t instruction=IF_ID.IR;
 	int Sam=instruction;
+	instruction=1048576147;
 	if(Sam==0){
 		if(flag==1){
 			RUN_FLAG=FALSE;
