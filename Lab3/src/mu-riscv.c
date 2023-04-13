@@ -11,6 +11,8 @@ struct CPU_State_Struct C;
 int binary[32];
 int opcode=0;
 int funct7=0;
+int forwardingFlag=0;
+
 
 /***************************************************************/
 /* Print out a list of commands available                                                                  */
