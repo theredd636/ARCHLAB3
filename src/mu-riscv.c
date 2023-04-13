@@ -422,7 +422,6 @@ void ID()
 	ALUOut <= PC + immediate*/
 	uint32_t instruction=IF_ID.IR;
 	int Sam=instruction;
-	instruction=1048576147;
 	if(Sam==0){
 		if(flag==1){
 			RUN_FLAG=FALSE;
@@ -481,7 +480,7 @@ void ID()
 void IF()
 {
 	/*IMPLEMENT THIS*/
-	uint32_t addr=NEXT_STATE.PC+4;
+	uint32_t addr=NEXT_STATE.PC;
 	IF_ID.PC=addr;
 	IF_ID.IR=mem_read_32(addr);
 	NEXT_STATE.PC+=4;
