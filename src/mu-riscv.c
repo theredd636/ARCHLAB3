@@ -333,22 +333,22 @@ int binaryToInt(int* input,int size){
 
 
 int BinaryIMMtoDec(int *binary){
-    int Dec[17];
-    for(int i = 0; i < 5; i++){
-    Dec[i] = binary[7+i];
-    }
-    
-    
+    int Dec[12];
     for(int i = 0; i < 12; i++)
     {
-        Dec[5+i] = binary[20 + i];
+        Dec[i] = binary[i];
     }
-    
-    int size = 17;
-    int ret = binaryToInt(Dec,size);
-	printf("%d\n",ret);    
-    return ret;
-    
+    int size = 12;
+    int count=1;
+    int total=0;
+    for (int i=12;i>=0;i--){
+		if(Dec[i]==1){
+        	total+=Dec[i]*count;
+		}
+		count*=2;
+    }
+	puts("");
+    return total/2;       
 }
 
 void handle_pipeline()
@@ -414,7 +414,6 @@ void EX()
 	else{
 		EX_MEM.ALUOutput=ID_EX.A+IF_ID.imm;
 	}
-
 	/*IMPLEMENT THIS*/
 }
 
@@ -429,10 +428,17 @@ void ID()
 	ALUOut <= PC + immediate*/
 	uint32_t instruction=IF_ID.IR;
 	int Sam=instruction;
+	if(Sam==0){
+		if(flag==1){
+			RUN_FLAG=FALSE;
+		}
+		flag++;
+	}
 	for(int craig=0; craig<32;craig++){
 		binary[craig]=0;
 	}
 	int i=0;
+	printf("%d\n ",instruction);
 	while(instruction>0){
 		if(instruction%2==0){
 			binary[i]=0;
@@ -470,13 +476,6 @@ void ID()
 	printf("%d\n",d);
 	ID_EX.A=C.REGS[1];
 	ID_EX.B=C.REGS[2];
-	if(Sam==0){
-		
-		if(flag==1){
-			RUN_FLAG=FALSE;
-		}
-		flag++;
-	}
 	//ID_EX.ALUOutput=d+CURRENT_STATE.PC;
 }
 
@@ -487,7 +486,7 @@ void ID()
 void IF()
 {
 	/*IMPLEMENT THIS*/
-	uint32_t addr=CURRENT_STATE.PC+4;
+	uint32_t addr=NEXT_STATE.PC+4;
 	IF_ID.PC=addr;
 	IF_ID.IR=mem_read_32(addr);
 	NEXT_STATE.PC+=4;
