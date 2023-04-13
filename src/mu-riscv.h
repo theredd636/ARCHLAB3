@@ -70,10 +70,6 @@ uint32_t PROGRAM_SIZE; /*in words*/
 /***************************************************************/
 /* Pipeline Registers.                                                                                                        */
 /***************************************************************/
-CPU_Pipeline_Reg IF_ID;
-CPU_Pipeline_Reg ID_EX;
-CPU_Pipeline_Reg EX_MEM;
-CPU_Pipeline_Reg MEM_WB;
 
 char prog_file[32];
 

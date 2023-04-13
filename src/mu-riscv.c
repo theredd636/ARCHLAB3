@@ -11,7 +11,11 @@ struct CPU_State_Struct C;
 int binary[32];
 int opcode=0;
 int funct7=0;
-
+CPU_Pipeline_Reg IF_ID;
+CPU_Pipeline_Reg ID_EX;
+CPU_Pipeline_Reg EX_MEM;
+CPU_Pipeline_Reg MEM_WB;
+int flag=0;
 /***************************************************************/
 /* Print out a list of commands available                                                                  */
 /***************************************************************/
@@ -351,7 +355,6 @@ void handle_pipeline()
 {
 	/*INSTRUCTION_COUNT should be incremented when instruction is done*/
 	/*Since we do not have branch/jump instructions, INSTRUCTION_COUNT should be incremented in WB stage */
-	printf("Test0\n");
 	WB();
 	MEM();
 	EX();
@@ -365,7 +368,6 @@ void handle_pipeline()
 void WB()
 {
 	/*IMPLEMENT THIS*/
-	printf("Test1\n");
 	MEM_WB.LMD=mem_read_32(MEM_WB.LMD);
 	
 }
@@ -376,7 +378,6 @@ void WB()
 void MEM()
 {
 	/*IMPLEMENT THIS*/
-	printf("Test2\n");
 	MEM_WB.IR=EX_MEM.IR;
 	if(opcode==3){
 		MEM_WB.LMD=mem_read_32(EX_MEM.ALUOutput);
@@ -397,7 +398,6 @@ void MEM()
 /************************************************************/
 void EX()
 {	
-	printf("Test3\n");
 	EX_MEM.IR=ID_EX.IR;
 	if(opcode==51){
 		if(funct7==0){
@@ -429,8 +429,6 @@ void ID()
 	ALUOut <= PC + immediate*/
 	uint32_t instruction=IF_ID.IR;
 	int Sam=instruction;
-
-	printf("%c",instruction);
 	for(int craig=0; craig<32;craig++){
 		binary[craig]=0;
 	}
@@ -441,6 +439,11 @@ void ID()
 		}
 		binary[i++]=instruction%2;
 		instruction/=2;
+	}
+	int FinalBinary[32];
+	for(int berg15 = 0; berg15 < 32; berg15++)
+	{
+		FinalBinary[berg15] = binary[31 - berg15];
 	}
 	int op[7];
 	i=32;
@@ -457,46 +460,26 @@ void ID()
 	char *instName;
 	opcode=binaryToInt(op,7);
 	int f3=binaryToInt(funct3,3);
-	if(opcode==50){
-			//instName=handleI(f3,instName);
-	}
-	if (opcode== 51){
-		int func7[7];
-		func7[0] = binary[24];
-		func7[1] = binary[25];
-		func7[2] = binary[26];
-		func7[3] = binary[27];
-		func7[4] = binary[28];
-		func7[5] = binary[29]; // = 1 for sub
-		func7[6] = binary[30];
-		funct7=binaryToInt(func7,7);
-	if(opcode==12){
-		RUN_FLAG=FALSE;
-		instName="end";
-	}
-	puts("");
-	if(Sam==0){
-		RUN_FLAG=FALSE;
-	}
-	puts("");
-	int FinalBinary[32];
-	for(int berg15 = 0; berg15 < 32; berg15++)
-	{
-		FinalBinary[berg15] = binary[31 - berg15];
-	}
-
+	printf("%d\n",opcode);
 	for(int berg=0;berg<32;berg++){
 		printf("%d", FinalBinary[berg]);
 	}
 	puts("");
-	int i;
-	i=BinaryIMMtoDec(FinalBinary);
-	ID_EX.A=C.REGS[IF_ID.IR];
-	ID_EX.B=C.REGS[IF_ID.IR];
-	ID_EX.ALUOutput=i+CURRENT_STATE.PC;
+	int d;
+	d=BinaryIMMtoDec(FinalBinary);
+	printf("%d\n",d);
+	ID_EX.A=C.REGS[1];
+	ID_EX.B=C.REGS[2];
+	if(Sam==0){
+		
+		if(flag==1){
+			RUN_FLAG=FALSE;
+		}
+		flag++;
+	}
+	//ID_EX.ALUOutput=d+CURRENT_STATE.PC;
+}
 
-}
-}
 
 /************************************************************/
 /* instruction fetch (IF) pipeline stage:                                                              */
@@ -504,8 +487,7 @@ void ID()
 void IF()
 {
 	/*IMPLEMENT THIS*/
-	printf("Test5\n");
-	uint32_t addr=CURRENT_STATE.PC;
+	uint32_t addr=CURRENT_STATE.PC+4;
 	IF_ID.PC=addr;
 	IF_ID.IR=mem_read_32(addr);
 	NEXT_STATE.PC+=4;
