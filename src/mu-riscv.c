@@ -5,20 +5,13 @@
 #include <assert.h>
 
 #include "mu-riscv.h"
-CPU_State C;
-int rt;//register to be written to 
-uint32_t rs;
-uint32_t PC;//program counter;
-CPU_Pipeline_Reg ID_IF;
-CPU_Pipeline_Reg ID_EX;
-CPU_Pipeline_Reg EX_MEM;
-CPU_Pipeline_Reg MEM_WB;
+
+
+struct CPU_State_Struct C;
 int binary[32];
-uint32_t instruction;
-int ALUOut;
-int funct3[3];
-int op[7];
-int func7[7];
+int opcode=0;
+int funct7=0;
+
 /***************************************************************/
 /* Print out a list of commands available                                                                  */
 /***************************************************************/
@@ -292,35 +285,6 @@ void init_memory() {
 /**************************************************************/
 /* load program into memory                                                                                      */
 /**************************************************************/
-int binaryToInt(int* input,int size){
-    int count=1;
-    int total=0;
-    for (int i=0;i<size;i++){
-        total+=input[i]*count;
-        if(i>0){
-             count*=2;
-        }
-    }
-    return total;
-}
-int BinaryIMMtoDec(int *binary){
-    int Dec[17];
-    for(int i = 0; i < 5; i++){
-    Dec[i] = binary[7+i];
-    }
-    
-    
-    for(int i = 0; i < 12; i++)
-    {
-        Dec[5+i] = binary[20 + i];
-    }
-    
-    int size = 17;
-    int ret = binaryToInt(Dec,size);
-	printf("%d\n",ret);    
-    return ret;
-    
-}
 void load_program() {
 	FILE * fp;
 	int i, word;
@@ -350,17 +314,49 @@ void load_program() {
 /************************************************************/
 /* maintain the pipeline                                                                                           */
 /************************************************************/
-int ll;
+
+int binaryToInt(int* input,int size){
+    int count=1;
+    int total=0;
+    for (int i=0;i<size;i++){
+        total+=input[i]*count;
+        if(i>0){
+             count*=2;
+        }
+    }
+    return total;
+}
+
+
+int BinaryIMMtoDec(int *binary){
+    int Dec[17];
+    for(int i = 0; i < 5; i++){
+    Dec[i] = binary[7+i];
+    }
+    
+    
+    for(int i = 0; i < 12; i++)
+    {
+        Dec[5+i] = binary[20 + i];
+    }
+    
+    int size = 17;
+    int ret = binaryToInt(Dec,size);
+	printf("%d\n",ret);    
+    return ret;
+    
+}
+
 void handle_pipeline()
 {
 	/*INSTRUCTION_COUNT should be incremented when instruction is done*/
 	/*Since we do not have branch/jump instructions, INSTRUCTION_COUNT should be incremented in WB stage */
+	printf("Test0\n");
 	WB();
 	MEM();
 	EX();
 	ID();
 	IF();
-	INSTRUCTION_COUNT++;
 }
 
 /************************************************************/
@@ -368,9 +364,9 @@ void handle_pipeline()
 /************************************************************/
 void WB()
 {
-	/*IMPLEMENT THIS
-	or load instruction: REGS[rt] <= LMD*/
-	C.REGS[rt]=mem_read_32(MEM_WB.LMD);
+	/*IMPLEMENT THIS*/
+	printf("Test1\n");
+	MEM_WB.LMD=mem_read_32(MEM_WB.LMD);
 	
 }
 
@@ -379,12 +375,10 @@ void WB()
 /************************************************************/
 void MEM()
 {
-	/*IMPLEMENT THIS
-	for load: LMD <= MEM[ALUOut]
-for store: MEM[ALUOut] <= B*/
+	/*IMPLEMENT THIS*/
+	printf("Test2\n");
 	MEM_WB.IR=EX_MEM.IR;
-	int opcode1=binaryToInt(op,7);
-	if(opcode1==3){
+	if(opcode==3){
 		MEM_WB.LMD=mem_read_32(EX_MEM.ALUOutput);
 	}
 	//load function
@@ -394,27 +388,19 @@ for store: MEM[ALUOut] <= B*/
 	else{
 		mem_write_32(EX_MEM.ALUOutput,EX_MEM.B);
 	}
+
+	
 }
 
 /************************************************************/
 /* execution (EX) pipeline stage:                                                                          */
 /************************************************************/
 void EX()
-{
-	/*IMPLEMENT THIS
-	In this stage, we have an ALU that operates on the operands that were read in the previous stage. We
-can perform one of four functions depending on the instruction type.
-i) Memory Reference (immediate):
-The ALU is adding the operands to form the memory address.
-ii) Register-register Operation
-ALUOut <= A op B
-ALU performs the operation specified by the instruction on the values stored in temporary registers A and B and
-places the result into ALUOut*/
-	int opcode1=binaryToInt(op,7);
-	int functe7=binaryToInt(func7,7);
+{	
+	printf("Test3\n");
 	EX_MEM.IR=ID_EX.IR;
-	if(opcode1==51){
-		if(functe7==0){
+	if(opcode==51){
+		if(funct7==0){
 			//add function
 			EX_MEM.ALUOutput=ID_EX.A+ID_EX.B;
 		}
@@ -426,10 +412,10 @@ places the result into ALUOut*/
 
 	
 	else{
-		EX_MEM.ALUOutput=ID_EX.A+ID_EX.imm;
+		EX_MEM.ALUOutput=ID_EX.A+IF_ID.imm;
 	}
 
-
+	/*IMPLEMENT THIS*/
 }
 
 /************************************************************/
@@ -441,7 +427,9 @@ void ID()
 	A <= REGS[rs]
 	B <= REGS[rt]
 	ALUOut <= PC + immediate*/
+	uint32_t instruction=IF_ID.IR;
 	int Sam=instruction;
+
 	printf("%c",instruction);
 	for(int craig=0; craig<32;craig++){
 		binary[craig]=0;
@@ -454,6 +442,7 @@ void ID()
 		binary[i++]=instruction%2;
 		instruction/=2;
 	}
+	int op[7];
 	i=32;
 	int y=0;
 	for(int w= i-26; w>=0; w--)
@@ -461,16 +450,18 @@ void ID()
 		op[y] = binary[w];
 		y++;
 	}
+	int funct3[3];
 	funct3[0] = binary[14];
 	funct3[1] = binary[13];
 	funct3[2] = binary[12];
 	char *instName;
-	int opcode=binaryToInt(op,7);
+	opcode=binaryToInt(op,7);
 	int f3=binaryToInt(funct3,3);
 	if(opcode==50){
 			//instName=handleI(f3,instName);
 	}
 	if (opcode== 51){
+		int func7[7];
 		func7[0] = binary[24];
 		func7[1] = binary[25];
 		func7[2] = binary[26];
@@ -478,7 +469,7 @@ void ID()
 		func7[4] = binary[28];
 		func7[5] = binary[29]; // = 1 for sub
 		func7[6] = binary[30];
-		int f7=binaryToInt(func7,7);
+		funct7=binaryToInt(func7,7);
 	if(opcode==12){
 		RUN_FLAG=FALSE;
 		instName="end";
@@ -500,9 +491,8 @@ void ID()
 	puts("");
 	int i;
 	i=BinaryIMMtoDec(FinalBinary);
-	printf("%d\n");
-	ID_EX.A=C.REGS[rs];
-	ID_EX.B=C.REGS[rt];
+	ID_EX.A=C.REGS[IF_ID.IR];
+	ID_EX.B=C.REGS[IF_ID.IR];
 	ID_EX.ALUOutput=i+CURRENT_STATE.PC;
 
 }
@@ -511,13 +501,13 @@ void ID()
 /************************************************************/
 /* instruction fetch (IF) pipeline stage:                                                              */
 /************************************************************/
-void IF(){
-	/*IMPLEMENT THIS
-	IR <= Mem[PC]
-PC <= PC + 4*/
-	PC= CURRENT_STATE.PC;
-	ID_IF.PC=PC;
-	instruction=mem_read_32(PC);
+void IF()
+{
+	/*IMPLEMENT THIS*/
+	printf("Test5\n");
+	uint32_t addr=CURRENT_STATE.PC;
+	IF_ID.PC=addr;
+	IF_ID.IR=mem_read_32(addr);
 	NEXT_STATE.PC+=4;
 }
 
@@ -544,24 +534,6 @@ void print_program(){
 /************************************************************/
 void show_pipeline(){
 	/*IMPLEMENT THIS*/
-	printf("|       |\n");
-	printf("|       |\n");
-	printf("|       |\n");
-	printf("|       |\n");
-	printf("|       |\n");
-	printf("|       |\n");
-	printf("|       |\n");
-	printf("|       |\n");
-	printf("|       |\n");
-	printf("| water |\n");
-	printf("|       |\n");
-	printf("|       |\n");
-	printf("|       |\n");
-	printf("|       |\n");
-	printf("|       |\n");
-	printf("|       |\n");
-	printf("|       |\n");
-	printf("|       |\n");
 }
 
 /***************************************************************/
